@@ -51,19 +51,19 @@ Microsoft Sentinel
 Created a Log Analytics workspace and enabled Microsoft Sentinel on top of it. The workspace is the log store; Sentinel is the SIEM layer that reads from it.
  
 ![Log Analytics workspace](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/1.png)
-![Sentinel enabled](screenshots/02-sentinel-enabled.png)
+![Sentinel enabled](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/2.png)
  
 Installed the **Azure Activity** solution from the Content Hub and opened the data connector. Azure Activity logs record control-plane operations — who created, changed or deleted resources. Low volume, high signal, and free.
  
-![Content Hub](screenshots/03-content-hub-azure-activity.png)
-![Data connector](screenshots/04-data-connector-config.png)
+![Content Hub](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/3.png)
+![Data connector](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/4.png)
  
 ### Problem 1: the connector wouldn't stream
  
 Microsoft's documented path is to assign an **Azure Policy** that configures log streaming across current and future subscriptions. I assigned it correctly — with a remediation task, scoped to the subscription, pointing at the right workspace.
  
-![Policy assignment](screenshots/05-azure-policy-assignment.png)
-![Policy confirmed in Assignments](screenshots/06-policy-assignment-confirmed.png)
+![Policy assignment](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/5.png)
+![Policy confirmed in Assignments](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/6.png)
  
 The assignment succeeded. **No data arrived.** After waiting well past normal ingestion latency, the connector still showed `Not connected` with no `Last Log Received` timestamp.
  
@@ -71,7 +71,7 @@ The assignment succeeded. **No data arrived.** After waiting well past normal in
  
 **Fix:** I configured the Diagnostic Setting directly on the subscription's Activity Log, streaming all categories (Administrative, Security, ServiceHealth, Alert, Recommendation, Policy, Autoscale, ResourceHealth) into the workspace.
  
-![Diagnostic settings](screenshots/07-diagnostic-settings-fix.png)
+![Diagnostic settings](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/7.png)
  
 Data started flowing.
  
@@ -86,7 +86,7 @@ AzureActivity
  
 Sentinel was also connected to the unified **Microsoft Defender XDR** portal — worth noting, since Microsoft is consolidating Sentinel into Defender and retiring the Azure portal experience.
  
-![Sentinel connected to Defender XDR](screenshots/09-sentinel-defender-xdr-connected.png)
+![Sentinel connected to Defender XDR](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/9.png)
  
 ---
  
@@ -96,7 +96,7 @@ Sentinel was also connected to the unified **Microsoft Defender XDR** portal —
  
 A detection you've never seen fire is a detection you don't trust. I created a storage account and deleted it, deliberately producing the exact control-plane event I wanted to catch.
  
-![Storage account](screenshots/08-storage-account-created.png)
+![Storage account](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/8.png)
  
 ### The rule
  
@@ -119,7 +119,7 @@ Filtering on `Success` is deliberate: failed deletion *attempts* are a different
 | Threshold | > 0 results | |
 | Entity mapping | Account → `FullName` → `Caller` | **This is what makes an incident investigable** — it turns a text row into a pivotable entity |
  
-![Analytics rule](screenshots/10-analytics-rule-review.png)
+![Analytics rule](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/10.png)
  
 The rule fired. An alert was raised, an incident created, and the `Caller` entity resolved correctly.
  
@@ -132,7 +132,7 @@ The workbook made it obvious: **20 alerts and 21 incidents** from a handful of r
 **Fix — two changes:**
 1. Narrowed the lookback from 1 hour to **15 minutes** (still wider than the 5-minute interval, so late-arriving events are still caught).
 2. Enabled **alert grouping** — alerts with matching entities collapse into a single incident over a 5-hour window.
-![Rule tuning](screenshots/14-rule-tuning-alert-grouping.png)
+![Rule tuning](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/14(4SOAR).png)
  
 > **Takeaway:** the trade-off is real. A wide lookback protects against ingestion lag but creates duplicates. Grouping is how you keep the buffer without flooding the queue. Detection engineering is tuning, not just writing.
  
@@ -140,9 +140,9 @@ The workbook made it obvious: **20 alerts and 21 incidents** from a handful of r
  
 ## 3. Incident triage
  
-Worked the incident the way I would on shift: assigned it, set it In Progress, reviewed the mapped entity (`kevotosin`) and the seven underlying log rows, then classified and documented it.
+Worked the incident the way I would on shift: assigned it, set it In Progress, reviewed the mapped entity (`callaer`) and the seven underlying log rows, then classified and documented it.
  
-![Alert triage](screenshots/11-alert-triage-classification.png)
+![Alert triage](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/11.png)
  
 The classification comment matters as much as the classification:
  
@@ -168,7 +168,7 @@ AzureActivity
  
 There's no threshold and no alert here. The point is to look at the *shape* of the data and spot what's abnormal.
  
-![Hunting query](screenshots/12-hunting-query-saved.png)
+![Hunting query](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/12.png)
  
 **What the hunt surfaced:** `MICROSOFT.AUTHORIZATION` operations sat at the top (12 and 8). In a real environment, a spike in permission and role-assignment changes is exactly what privilege escalation looks like — an attacker with a foothold granting themselves rights. `MICROSOFT.KEYVAULT` operations also appeared, which in a real tenant would be a Credential Access flag.
  
@@ -182,7 +182,7 @@ The natural next step, and the reason hunting and detection feed each other: if 
  
 A two-tile workbook. Raw logs are unreadable to anyone but an analyst — a workbook is how you make the environment legible to a manager or a client.
  
-![Workbook](screenshots/13-workbook-dashboard.png)
+![Workbook](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/13.png)
  
 **Tile 1 — operations by type (bar):**
 ```kql
@@ -212,7 +212,7 @@ Built a Logic App playbook, **`Add-Incident-Comment`**, with a **Microsoft Senti
  
 I deliberately chose a non-destructive action. The goal was to prove the orchestration chain, not to wire up something that could break the environment.
  
-![Automation](screenshots/15-automation-create-playbook.png)
+![Automation](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/15.png)
 ![Deploy playbook](screenshots/16-playbook-deploy.png)
 ![Logic App designer](screenshots/17-logic-app-designer.png)
  
