@@ -213,12 +213,12 @@ Built a Logic App playbook, **`Add-Incident-Comment`**, with a **Microsoft Senti
 I deliberately chose a non-destructive action. The goal was to prove the orchestration chain, not to wire up something that could break the environment.
  
 ![Automation](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/15.png)
-![Deploy playbook](screenshots/16-playbook-deploy.png)
-![Logic App designer](screenshots/17-logic-app-designer.png)
+![Deploy playbook](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/16.png)
+![Logic App designer](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/17.png)
  
 Attached to the detection rule via an **automation rule**, and enabled.
  
-![Active playbook](screenshots/18-active-playbook-enabled.png)
+![Active playbook](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/18.png)
  
 ### Permissions run in two directions
  
@@ -226,7 +226,7 @@ This is the part that catches people, and it caught me:
  
 1. **Sentinel needs permission to *run* the playbook** — granted by scoping playbook permissions to the resource group (Sentinel Automation Contributor).
 2. **The playbook needs permission to *act on* Sentinel** — granted by assigning **Microsoft Sentinel Responder** to the Logic App's managed identity.
-![Managed identity role assignment](screenshots/19-managed-identity-rbac.png)
+![Managed identity role assignment](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/19.png)
  
 Granting the first without the second gets you a playbook that fires and then fails. That's least privilege working as designed — Sentinel can't run arbitrary Logic Apps, and a Logic App can't touch Sentinel, unless you explicitly say so.
  
@@ -238,7 +238,7 @@ Granting the first without the second gets you a playbook that fires and then fa
  
 **Symptom:** trigger history shows **12 runs, all Succeeded, all Fired**. Run history shows **0 successful, 12 failed**.
  
-![Trigger history](screenshots/20-trigger-history-succeeded.png)
+![Trigger history](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/20.png)
  
 That split is the whole diagnostic. The **trigger** reports "I was invoked and started a run." The **run** reports "everything after the trigger completed." Trigger succeeded + run failed = **the orchestration works; something inside the workflow broke.**
  
