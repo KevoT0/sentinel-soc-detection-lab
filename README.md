@@ -50,7 +50,7 @@ Microsoft Sentinel
  
 Created a Log Analytics workspace and enabled Microsoft Sentinel on top of it. The workspace is the log store; Sentinel is the SIEM layer that reads from it.
  
-![Log Analytics workspace](screenshots/01-log-analytics-workspace.png)
+![Log Analytics workspace](https://github.com/KevoT0/sentinel-soc-detection-lab/blob/main/1.png)
 ![Sentinel enabled](screenshots/02-sentinel-enabled.png)
  
 Installed the **Azure Activity** solution from the Content Hub and opened the data connector. Azure Activity logs record control-plane operations — who created, changed or deleted resources. Low volume, high signal, and free.
